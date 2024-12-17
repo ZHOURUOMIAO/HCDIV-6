@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- 添加字体引入 -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* 浅绿色背景样式 */
+        body {
+            background-color: #f4fff3; /* 浅绿色背景色，与 test5.html 相同 */
+        }
+
+        .bubble {
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            stroke-width: 2px;
+        }
+
+        .bubble:hover {
+            opacity: 1;
+            stroke: #333;
+        }
+
+        .axis path,
+        .axis line {
+            stroke: #000;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            pointer-events: none;
+            display: none;
+            font-size: 12px;
+        }
+
+        /* 添加布局样式 */
+        #chart-container {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        /* 修改描述文字样式 */
+        #chart-description {
+            width: 30%; /* 文字描述占 30% 宽度 */
+            padding-left: 15px; /* 与图表保持间距 */
+            font-size: 1.3em; /* 修改字体大小 */
+            font-family: 'Roboto', sans-serif; /* 设置为目标字体 */
+            font-weight: 700; /* 设置字体粗细 */
+            line-height: 1.6; /* 行高 */
+            margin-top: 100px; /* 文字下移 */
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- 图表和文字的容器 -->
+    <div id="chart-container">
+        <!-- 图表 -->
+        <div style="flex: 1;">
+            <svg width="900" height="600" id="chart"></svg>
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+
+        <!-- 描述文字 -->
+        <div id="chart-description">
+            This bubble chart shows the distribution of singers in the 50 most popular songs from 1950 to 2024, classified by different score ranges, reflecting the hierarchical differences in singers' popularity. As can be seen from the figure, the number of singers in the 85-point range is the largest, indicating that the popularity of most singers is concentrated in this score range. The number of singers in the 89-point range is the smallest, indicating that singers in this score range usually have a higher industry status.
+        </div>
+    </div>
+    <script>
+        const data = [
+            {"Artist Name": "Sabrina Carpenter", "Popularity": 94},
+            {"Artist Name": "Taylor Swift", "Popularity": 90},
+            {"Artist Name": "Coldplay", "Popularity": 89},
+            {"Artist Name": "Teddy Swims", "Popularity": 89},
+            {"Artist Name": "The Weeknd, Daft Punk", "Popularity": 88},
+            {"Artist Name": "Bruno Mars", "Popularity": 88},
+            {"Artist Name": "David Guetta, OneRepublic", "Popularity": 88},
+            {"Artist Name": "The Weeknd", "Popularity": 88},
+            {"Artist Name": "Noah Kahan", "Popularity": 88},
+            {"Artist Name": "Linkin Park", "Popularity": 88},
+            {"Artist Name": "Benson Boone", "Popularity": 87},
+            {"Artist Name": "Bruno Mars", "Popularity": 87},
+            {"Artist Name": "The Chainsmokers, Coldplay", "Popularity": 87},
+            {"Artist Name": "Linkin Park", "Popularity": 87},
+            {"Artist Name": "The Goo Goo Dolls", "Popularity": 87},
+            {"Artist Name": "a-ha", "Popularity": 86},
+            {"Artist Name": "One Direction", "Popularity": 86},
+            {"Artist Name": "David Guetta, Bebe Rexha", "Popularity": 86},
+            {"Artist Name": "Billie Eilish, Khalid", "Popularity": 86},
+            {"Artist Name": "Coldplay", "Popularity": 86},
+            {"Artist Name": "Eminem", "Popularity": 86},
+            {"Artist Name": "Natasha Bedingfield", "Popularity": 86},
+            {"Artist Name": "Coldplay", "Popularity": 86},
+            {"Artist Name": "Imagine Dragons", "Popularity": 86},
+            {"Artist Name": "Bruno Mars", "Popularity": 86},
+            {"Artist Name": "Ed Sheeran", "Popularity": 85},
+            {"Artist Name": "WALK THE MOON", "Popularity": 85},
+            {"Artist Name": "Kendrick Lamar, SZA", "Popularity": 85},
+            {"Artist Name": "Travis Scott", "Popularity": 85},
+            {"Artist Name": "Tears For Fears", "Popularity": 85},
+            {"Artist Name": "James Arthur", "Popularity": 85},
+            {"Artist Name": "Shakira, Wyclef Jean", "Popularity": 85},
+            {"Artist Name": "Coldplay", "Popularity": 85},
+            {"Artist Name": "Pitbull, AFROJACK, Ne-Yo, Nayer", "Popularity": 85},
+            {"Artist Name": "Ed Sheeran", "Popularity": 85},
+            {"Artist Name": "OneRepublic", "Popularity": 85},
+            {"Artist Name": "Alphaville", "Popularity": 85},
+            {"Artist Name": "Fleetwood Mac", "Popularity": 85},
+            {"Artist Name": "TOTO", "Popularity": 85},
+            {"Artist Name": "Nickelback", "Popularity": 85},
+            {"Artist Name": "Twenty One Pilots", "Popularity": 84},
+            {"Artist Name": "AC/DC", "Popularity": 84},
+            {"Artist Name": "Linkin Park", "Popularity": 84},
+            {"Artist Name": "Post Malone", "Popularity": 84},
+            {"Artist Name": "Creedence Clearwater Revival", "Popularity": 84},
+            {"Artist Name": "Lana Del Rey", "Popularity": 84},
+            {"Artist Name": "Justin Bieber", "Popularity": 84},
+            {"Artist Name": "P!nk, Nate Ruess", "Popularity": 84},
+            {"Artist Name": "Britney Spears", "Popularity": 84},
+            {"Artist Name": "Shawn Mendes", "Popularity": 84},
+        ];
+
+        const margin = {top: 20, right: 30, bottom: 60, left: 50};
+        const width = 900 - margin.left - margin.right;
+        const height = 600 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleLinear()
+            .domain([84, 89])
+            .range([0, width]);
+
+        const color = d3.scaleSequential(d3.interpolateViridis)
+            .domain([84, 89]);
+
+        const bubbleSize = 15;
+
+        svg.append("g")
+            .attr("transform", `translate(0,${height + 10})`)
+            .call(d3.axisBottom(x).ticks(6).tickFormat(d => d.toFixed(0)))
+            .append("text")
+            .attr("y", 40)
+            .attr("x", width / 2)
+            .attr("fill", "black")
+            .attr("text-anchor", "middle")
+            .text("Average Popularity");
+
+        const tooltip = d3.select("#tooltip");
+
+        svg.selectAll(".bubble")
+            .data(data)
+            .enter().append("circle")
+            .attr("class", "bubble")
+            .attr("cx", d => x(d.Popularity))
+            .attr("cy", height + 50) // 动画初始位置：页面下方
+            .attr("r", bubbleSize)
+            .attr("fill", d => color(d.Popularity))
+            .attr("stroke", d => d3.rgb(color(d.Popularity)).darker(1.5))
+            .transition() // 添加动画
+            .duration(1000)
+            .delay((_, i) => i * 50) // 每个气泡延迟出现
+            .attr("cy", (_, i) => (i + 0.5) * (height / data.length)); // 移动到目标位置
+
+        svg.selectAll(".bubble")
+            .on("mouseover", function(event, d) {
+                d3.select(this)
+                    .transition("hover")
+                    .duration(200)
+                    .attr("r", bubbleSize * 1.2); // 放大气泡
+                tooltip.style("display", "block")
+                    .html(`<strong>${d["Artist Name"]}</strong><br>Popularity: ${d.Popularity}`);
+            })
+            .on("mousemove", function(event) {
+                tooltip.style("top", (event.pageY + 10) + "px")
+                    .style("left", (event.pageX + 10) + "px");
+            })
+            .on("mouseout", function() {
+                d3.select(this)
+                    .transition("hover")
+                    .duration(200)
+                    .attr("r", bubbleSize); // 恢复气泡大小
+                tooltip.style("display", "none");
+            });
+    </script>
+</body>
+</html>

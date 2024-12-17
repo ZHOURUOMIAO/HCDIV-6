@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .country {
+      fill: #e0e0e0;
+      stroke: #ffffff;
+      stroke-width: 0.5px;
+    }
+    .artist-marker {
+      fill: #32CD32;
+      stroke: #ffffff;
+      stroke-width: 0.5px;
+      cursor: pointer;
+    }
+    .tooltip {
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      padding: 5px;
+      border-radius: 3px;
+      pointer-events: none;
+      display: none;
+    }
+    svg {
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="map-container"></div>
+  <div class="tooltip" id="tooltip"></div>
+  <script>
+  const artists = [
+    { name: "David Guetta", nationality: "France", coords: [2.3522, 48.8566] },
+      { name: "OneRepublic", nationality: "USA", coords: [-104.9903, 39.7392] },
+      { name: "Noah Kahan", nationality: "USA", coords: [-71.500, 42.500] },
+      { name: "The Chainsmokers", nationality: "USA", coords: [-74.006, 40.7128] },
+      { name: "Coldplay", nationality: "UK", coords: [-0.1276, 51.5074] },
+      { name: "Benson Boone", nationality: "USA", coords: [-122.3301, 47.6038] },
+      { name: "Billie Eilish", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "Khalid", nationality: "USA", coords: [-106.4869, 31.7619] },
+      { name: "a-ha", nationality: "Norway", coords: [10.7522, 59.9139] },
+      { name: "Bebe Rexha", nationality: "USA", coords: [-74.006, 40.7128] },
+      { name: "Teddy Swims", nationality: "USA", coords: [-84.3880, 33.7490] },
+      { name: "Kendrick Lamar", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "SZA", nationality: "USA", coords: [-90.1994, 38.6270] },
+      { name: "Alphaville", nationality: "Germany", coords: [13.4050, 52.5200] },
+      { name: "Pitbull", nationality: "USA", coords: [-80.1918, 25.7617] },
+      { name: "AFROJACK", nationality: "Netherlands", coords: [4.8994, 52.3676] },
+      { name: "Ne-Yo", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "Nayer", nationality: "USA", coords: [-74.006, 40.7128] },
+      { name: "Shakira", nationality: "Colombia", coords: [-74.0721, 4.7110] },
+      { name: "Wyclef Jean", nationality: "Haiti", coords: [-72.2852, 18.5944] },
+      { name: "Lana Del Rey", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "Jung Kook", nationality: "South Korea", coords: [126.9780, 37.5665] },
+      { name: "Tyla", nationality: "South Africa", coords: [28.0473, -26.2041] },
+      { name: "P!nk", nationality: "USA", coords: [-75.1652, 39.9526] },
+      { name: "Nate Ruess", nationality: "USA", coords: [-94.5786, 39.0997] },
+      { name: "Halsey", nationality: "USA", coords: [-74.006, 40.7128] },
+      { name: "cassö", nationality: "UK", coords: [-0.1276, 51.5074] },
+      { name: "RAYE", nationality: "UK", coords: [-0.1276, 51.5074] },
+      { name: "D-Block Europe", nationality: "UK", coords: [-0.1276, 51.5074] },
+      { name: "Travis Scott", nationality: "USA", coords: [-95.3698, 29.7604] },
+      { name: "Juice WRLD", nationality: "USA", coords: [-87.6298, 41.8781] },
+      { name: "Nelly Furtado", nationality: "Canada", coords: [-123.1216, 49.2827] },
+      { name: "Timbaland", nationality: "USA", coords: [-76.2859, 36.8508] },
+      { name: "Alec Benjamin", nationality: "USA", coords: [-112.0740, 33.4484] },
+      { name: "Roddy Ricch", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "Noah Cyrus", nationality: "USA", coords: [-86.7816, 36.1627] },
+      { name: "The Script", nationality: "Ireland", coords: [-6.2603, 53.3498] },
+      { name: "will.i.am", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "Metro Boomin", nationality: "USA", coords: [-90.1994, 38.6270] },
+      { name: "The Weeknd", nationality: "Canada", coords: [-79.3832, 43.6532] },
+      { name: "21 Savage", nationality: "UK", coords: [-0.1276, 51.5074] },
+      { name: "Måneskin", nationality: "Italy", coords: [12.4964, 41.9028] },
+      { name: "Eminem", nationality: "USA", coords: [-83.0458, 42.3314] },
+      { name: "Marshmello", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "Future", nationality: "USA", coords: [-84.3880, 33.7490] },
+      { name: "Flo Rida", nationality: "USA", coords: [-80.1918, 25.7617] },
+      { name: "T-Pain", nationality: "USA", coords: [-81.3792, 28.5383] },
+      { name: "Regard", nationality: "Kosovo", coords: [21.1662, 42.6629] },
+      { name: "Elton John", nationality: "UK", coords: [-0.1276, 51.5074] },
+      { name: "Dua Lipa", nationality: "UK/Kosovo", coords: [21.1662, 42.6629] },
+      { name: "PNAU", nationality: "Australia", coords: [151.2093, -33.8688] },
+      { name: "TOTO", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "G-Eazy", nationality: "USA", coords: [-122.4194, 37.7749] },
+      { name: "A$AP Rocky", nationality: "USA", coords: [-73.9352, 40.7306] },
+      { name: "Skepta", nationality: "UK", coords: [-0.1276, 51.5074] },
+      { name: "Don Omar", nationality: "Puerto Rico", coords: [-66.1057, 18.4655] },
+      { name: "Lucenzo", nationality: "Portugal", coords: [-9.1392, 38.7223] },
+      { name: "XXXTENTACION", nationality: "USA", coords: [-80.1373, 26.1224] },
+      { name: "Wallows", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "Clairo", nationality: "USA", coords: [-71.0589, 42.3601] },
+      { name: "Stephen Sanchez", nationality: "USA", coords: [-86.7816, 36.1627] },
+      { name: "Em Beihold", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "Calvin Harris", nationality: "UK", "coords": [-4.2504, 55.8609] },
+      { name: "Rema", nationality: "Nigeria", coords: [3.3792, 6.5244] },
+      { name: "Selena Gomez", nationality: "USA", coords: [-96.7969, 32.7767] },
+      { name: "DaBaby", nationality: "USA", coords: [-80.8431, 35.2271] },
+      { name: "Morgan Wallen", nationality: "USA", coords: [-86.7816, 36.1627] },
+      { name: "Justin Timberlake", nationality: "USA", coords: [-90.0489, 35.1495] },
+      { name: "Creeds", nationality: "USA", coords: [-80.8431, 35.2271] },
+      { name: "Paul Russell", nationality: "USA", coords: [-118.2437, 34.0522] },
+      { name: "Meghan Trainor", nationality: "USA", coords: [-70.0811, 41.6518] },
+      { name: "John Legend", nationality: "USA", coords: [-74.006, 40.7128] }
+    ];
+
+    const width = 960;
+    const height = 600;
+
+    const svg = d3.select("#map-container")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .style("background-color", "#ffffff")  <!-- 添加白色背景 -->
+      .call(d3.zoom().on("zoom", function (event) {
+        svg.attr("transform", event.transform);
+      }))
+      .append("g");
+
+    const projection = d3.geoMercator()
+      .scale(130)
+      .translate([width / 2, height / 1.5]);
+
+    const path = d3.geoPath().projection(projection);
+
+    const tooltip = d3.select("#tooltip");
+
+    // 加载地图数据
+    d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function (worldData) {
+      if (!worldData || !worldData.features) {
+        console.error("GeoJSON data could not be loaded or is invalid.");
+        return;
+      }
+
+      // 绘制地图
+      svg.selectAll(".country")
+        .data(worldData.features)
+        .enter().append("path")
+        .attr("class", "country")
+        .attr("d", path);
+
+           // 绘制艺术家标记
+           svg.selectAll(".artist-marker")
+        .data(artists)
+        .enter()
+        .append("circle")
+        .attr("class", "artist-marker")
+        .attr("r", 0) // 初始化半径为 0
+        .attr("transform", d => {
+            const [x, y] = projection(d.coords);
+            return `translate(${x},${y})`;
+        })
+        .transition() // 添加动画
+        .duration(1500) // 动画时间
+        .ease(d3.easeBounce) // 弹跳效果
+        .attr("r", 5) // 动画结束时的半径
+        .on("end", function() {
+            d3.select(this)
+                .on("mouseover", function(event, d) {
+                    tooltip.style("display", "block")
+                        .html(`<strong>${d.name}</strong><br/>${d.nationality}`);
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("top", (event.pageY + 10) + "px")
+                           .style("left", (event.pageX + 10) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("display", "none");
+                })
+                .on("click", function(event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("r", 10) // 点击时增大半径
+                        .transition()
+                        .duration(200)
+                        .attr("r", 5); // 回到原始半径
+                });
+        });
+
+    }).catch(function (error) {
+      console.error("Error loading GeoJSON data:", error);
+    });
+  </script>
+</body>
+</html>

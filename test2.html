@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-cloud/build/d3.layout.cloud.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4fff3; /* 浅绿色背景 */
+        }
+        .wordcloud-container {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #107f79;
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        text {
+            transition: opacity 1s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="wordcloud-container">
+        <div class="wordcloud"></div>
+    </div>
+
+    <script>
+        const data = [
+            {"text": "Sabrina Carpenter", "size": 84, "popularity": 94},
+            {"text": "Taylor Swift", "size": 60, "popularity": 90},
+            {"text": "Coldplay", "size": 54, "popularity": 89},
+            {"text": "Teddy Swims", "size": 54, "popularity": 89},
+            {"text": "The Weeknd, Daft Punk", "size": 48, "popularity": 88},
+            {"text": "Bruno Mars", "size": 48, "popularity": 88},
+            {"text": "David Guetta, OneRepublic", "size": 48, "popularity": 88},
+            {"text": "The Weeknd", "size": 48, "popularity": 88},
+            {"text": "Noah Kahan", "size": 48, "popularity": 88},
+            {"text": "Linkin Park", "size": 48, "popularity": 88},
+            {"text": "Benson Boone", "size": 42, "popularity": 87},
+            {"text": "The Chainsmokers, Coldplay", "size": 42, "popularity": 87},
+            {"text": "The Goo Goo Dolls", "size": 42, "popularity": 87},
+            {"text": "One Direction", "size": 36, "popularity": 86},
+            {"text": "David Guetta, Bebe Rexha", "size": 36, "popularity": 86},
+            {"text": "Billie Eilish, Khalid", "size": 36, "popularity": 86},
+            {"text": "Imagine Dragons", "size": 36, "popularity": 86},
+            {"text": "Ed Sheeran", "size": 30, "popularity": 85},
+            {"text": "AC/DC", "size": 30, "popularity": 85},
+            {"text": "Fleetwood Mac", "size": 30, "popularity": 85},
+            {"text": "Post Malone", "size": 30, "popularity": 85},
+            {"text": "Twenty One Pilots", "size": 30, "popularity": 85},
+            {"text": "Justin Bieber", "size": 30, "popularity": 85},
+            {"text": "Britney Spears", "size": 30, "popularity": 85},
+            {"text": "P!nk, Nate Ruess", "size": 30, "popularity": 85},
+            {"text": "Fleetwood Mac", "size": 30, "popularity": 85},
+            {"text": "Nickelback", "size": 30, "popularity": 85},
+            {"text": "Shawn Mendes", "size": 30, "popularity": 85},
+            {"text": "Natasha Bedingfield", "size": 30, "popularity": 85},
+            {"text": "Alphaville", "size": 30, "popularity": 85}
+        ];
+
+        const width = 900;
+        const height = 600;
+
+        const color = d3.scaleLinear()
+            .domain([85, 94])
+            .range(["#e5f5e0", "#107f79"]);
+
+        const svg = d3.select(".wordcloud")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+        const layout = d3.layout.cloud()
+            .size([width, height])
+            .words(data)
+            .padding(3) // 缩小间隔，允许适度重叠
+            .rotate(() => 0)
+            .fontSize(d => d.size)
+            .on("end", draw);
+
+        layout.start();
+
+        function draw(words) {
+            svg.selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .attr("text-anchor", "middle")
+                .attr("font-size", d => `${d.size}px`)
+                .style("fill", d => color(d.popularity))
+                .attr("transform", d => `translate(${d.x}, ${d.y})`)
+                .style("opacity", 0)
+                .transition()
+                .duration(1500)
+                .delay((_, i) => i * 50)
+                .style("opacity", 1)
+                .text(d => d.text);
+        }
+    </script>
+</body>
+</html>
